@@ -1,0 +1,1237 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تحدي PHP التفاعلي — جامع التركي</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --card-bg: rgba(22, 28, 45, 0.4);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --primary: #c9a84c;
+            --primary-glow: rgba(201, 168, 76, 0.3);
+            --success: #10b981;
+            --danger: #ef4444;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --gradient: linear-gradient(135deg, #c9a84c 0%, #a3812d 100%);
+            --font-main: 'Cairo', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(201, 168, 76, 0.05) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.05) 0px, transparent 50%),
+                radial-gradient(at 50% 50%, rgba(22, 28, 45, 0.6) 0px, transparent 100%);
+            color: var(--text-main);
+            font-family: var(--font-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        header {
+            padding: 2rem 1.5rem 1rem 1.5rem;
+            text-align: center;
+            border-bottom: 1px solid var(--card-border);
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(11, 15, 25, 0.8);
+        }
+
+        .header-container {
+            max-width: 800px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            font-weight: 800;
+            background: linear-gradient(to left, #fff, var(--primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .coffee-cup {
+            animation: bounce 2s infinite ease-in-out;
+            cursor: pointer;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0) rotate(0); }
+            50% { transform: translateY(-5px) rotate(5deg); }
+        }
+
+        .stats-badge {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .stats-badge span {
+            color: var(--primary);
+        }
+
+        .main-container {
+            flex: 1;
+            max-width: 800px;
+            width: 100%;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            background: rgba(22, 28, 45, 0.6);
+            padding: 0.35rem;
+            border-radius: 12px;
+            border: 1px solid var(--card-border);
+        }
+
+        .tab-btn {
+            flex: 1;
+            background: transparent;
+            border: none;
+            padding: 0.75rem;
+            color: var(--text-muted);
+            font-family: var(--font-main);
+            font-weight: 600;
+            font-size: 0.95rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .tab-btn.active {
+            background: var(--gradient);
+            color: #0b0f19;
+            box-shadow: 0 4px 15px var(--primary-glow);
+        }
+
+        /* Content Sections */
+        .content-section {
+            display: none;
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+
+        .content-section.active {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Glass Card */
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(8px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 150px;
+            height: 150px;
+            background: radial-gradient(circle, rgba(201, 168, 76, 0.08) 0%, rgba(201, 168, 76, 0) 70%);
+            pointer-events: none;
+        }
+
+        /* Flashcards Section */
+        .flashcard-container {
+            perspective: 1000px;
+            width: 100%;
+            height: 320px;
+            cursor: pointer;
+        }
+
+        .flashcard {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 20px;
+        }
+
+        .flashcard.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 20px;
+            border: 1px solid var(--card-border);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2.5rem;
+            text-align: center;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+        }
+
+        .card-front {
+            background: linear-gradient(135deg, #131a30 0%, #1c2747 100%);
+            color: var(--text-main);
+        }
+
+        .card-back {
+            background: linear-gradient(135deg, #16241a 0%, #1e3a27 100%);
+            color: #d1fae5;
+            transform: rotateY(180deg);
+            border-color: rgba(16, 185, 129, 0.2);
+        }
+
+        .card-face .badge {
+            background: rgba(201, 168, 76, 0.15);
+            color: var(--primary);
+            border: 1px solid rgba(201, 168, 76, 0.3);
+            padding: 0.3rem 0.8rem;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-face h2 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            line-height: 1.4;
+        }
+
+        .card-face p {
+            font-size: 1.05rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        .card-back p {
+            color: #a7f3d0;
+        }
+
+        .hint-text {
+            margin-top: 1.5rem;
+            font-size: 0.8rem;
+            color: var(--primary);
+            opacity: 0.8;
+            font-weight: 600;
+        }
+
+        .card-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1rem;
+        }
+
+        .nav-btn {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            padding: 0.75rem 1.25rem;
+            border-radius: 12px;
+            font-family: var(--font-main);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: rgba(201, 168, 76, 0.05);
+        }
+
+        /* Quiz Styles */
+        .quiz-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            font-size: 0.95rem;
+            color: var(--text-muted);
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--gradient);
+            width: 0%;
+            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 0 10px var(--primary-glow);
+        }
+
+        .question-text {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            line-height: 1.5;
+        }
+
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .option-item {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 1.2rem;
+            text-align: right;
+            font-family: var(--font-main);
+            color: var(--text-main);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .option-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: var(--primary);
+            transform: translateX(-4px);
+        }
+
+        .option-item.correct {
+            background: rgba(16, 185, 129, 0.15) !important;
+            border-color: var(--success) !important;
+            color: #d1fae5;
+        }
+
+        .option-item.incorrect {
+            background: rgba(239, 68, 68, 0.15) !important;
+            border-color: var(--danger) !important;
+            color: #fee2e2;
+        }
+
+        .option-item.disabled {
+            pointer-events: none;
+            opacity: 0.6;
+        }
+
+        .option-item.disabled.correct, .option-item.disabled.incorrect {
+            opacity: 1;
+        }
+
+        .feedback-box {
+            margin-top: 1.5rem;
+            padding: 1.25rem;
+            border-radius: 12px;
+            background: rgba(201, 168, 76, 0.08);
+            border: 1px solid rgba(201, 168, 76, 0.15);
+            display: none;
+            animation: slideDown 0.3s ease-out forwards;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .feedback-title {
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .feedback-desc {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        /* Debugging Section */
+        .code-container {
+            background: #060913;
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 1.25rem;
+            font-family: 'Courier New', Courier, monospace;
+            direction: ltr;
+            text-align: left;
+            overflow-x: auto;
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .code-line {
+            display: block;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s;
+            white-space: pre;
+        }
+
+        .code-line:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .code-line.selected {
+            background: rgba(201, 168, 76, 0.2);
+            border-left: 3px solid var(--primary);
+        }
+
+        .code-line.correct-line {
+            background: rgba(16, 185, 129, 0.2) !important;
+            border-left: 3px solid var(--success) !important;
+        }
+
+        .code-line.incorrect-line {
+            background: rgba(239, 68, 68, 0.2) !important;
+            border-left: 3px solid var(--danger) !important;
+        }
+
+        /* Coffee Wakeup */
+        .wakeup-banner {
+            position: fixed;
+            bottom: 2rem;
+            left: 2rem;
+            right: 2rem;
+            background: rgba(239, 68, 68, 0.95);
+            border: 1px solid var(--danger);
+            color: white;
+            padding: 1.2rem;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(239, 68, 68, 0.3);
+            display: none;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+            animation: bounceIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        @keyframes bounceIn {
+            0% { transform: scale(0.3); opacity: 0; }
+            50% { transform: scale(1.05); }
+            70% { transform: scale(0.9); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .wakeup-btn {
+            background: white;
+            color: var(--danger);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-family: var(--font-main);
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        /* Action Buttons */
+        .action-btn {
+            background: var(--gradient);
+            color: #0b0f19;
+            font-family: var(--font-main);
+            font-weight: 700;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1rem;
+            box-shadow: 0 4px 15px var(--primary-glow);
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(201, 168, 76, 0.4);
+        }
+
+        /* Score screen */
+        .score-screen {
+            text-align: center;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .score-circle {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            border: 8px solid var(--primary);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--primary);
+            box-shadow: 0 0 20px var(--primary-glow);
+            margin: 1rem 0;
+            background: rgba(201, 168, 76, 0.05);
+        }
+
+        .cup-logo {
+            font-size: 4rem;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            border-top: 1px solid var(--card-border);
+            margin-top: auto;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-container">
+            <h1>
+                <span class="coffee-cup" onclick="triggerWakeupAlarm()">☕</span>
+                تحدي PHP التفاعلي
+            </h1>
+            <div class="stats-badge">
+                النقاط: <span id="score-counter">0</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <!-- Tabs Navigation -->
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('flashcards', this)">
+                🎴 بطاقات الاستذكار
+            </button>
+            <button class="tab-btn" onclick="switchTab('quiz', this)">
+                🧪 اختبار سريع
+            </button>
+            <button class="tab-btn" onclick="switchTab('debugger', this)">
+                🔍 المبرمج المحقق
+            </button>
+        </div>
+
+        <!-- Section: Flashcards -->
+        <div id="flashcards" class="content-section active">
+            <div class="card">
+                <div class="flashcard-container" onclick="flipCard()">
+                    <div class="flashcard" id="flashcard-obj">
+                        <div class="card-face card-front">
+                            <span class="badge" id="card-badge">تحليل مقارن</span>
+                            <h2 id="card-front-title">مقارنةinclude مقابل require</h2>
+                            <p id="card-front-desc">ماذا يحدث عندما لا تجد الدالة الملف المستهدف؟</p>
+                            <span class="hint-text">👈 اضغط لقلب البطاقة ومعرفة الإجابة</span>
+                        </div>
+                        <div class="card-face card-back">
+                            <h2>الإجابة النموذجية</h2>
+                            <p id="card-back-text">
+                                - include: تعطي تحذيراً (Warning) وتكمل تنفيذ البرنامج.<br>
+                                - require: تعطي خطأً فادحاً (Fatal Error) وتوقف تنفيذ البرنامج فوراً!
+                            </p>
+                            <span class="hint-text">اضغط للعودة للوجه الآخر</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-nav">
+                    <button class="nav-btn" onclick="prevCard(event)">➡️ السابق</button>
+                    <span id="card-progress">1 / 5</span>
+                    <button class="nav-btn" onclick="nextCard(event)">التالي ⬅️</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section: Quiz -->
+        <div id="quiz" class="content-section">
+            <div class="card">
+                <div id="quiz-playable">
+                    <div class="quiz-header">
+                        <span id="quiz-question-number">السؤال 1 من 6</span>
+                        <span id="quiz-module-name">أساسيات لغة PHP</span>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" id="quiz-progress-bar"></div>
+                    </div>
+                    <div class="question-text" id="quiz-question-text">
+                        تحميل السؤال...
+                    </div>
+                    <div class="options-list" id="quiz-options-list">
+                        <!-- Options filled by JS -->
+                    </div>
+                    <div class="feedback-box" id="quiz-feedback-box">
+                        <div class="feedback-title" id="quiz-feedback-title">
+                            ✓ إجابة صحيحة!
+                        </div>
+                        <div class="feedback-desc" id="quiz-feedback-desc">
+                            التوضيح هنا...
+                        </div>
+                    </div>
+                    <div style="margin-top: 1.5rem; text-align: left; display: none;" id="quiz-next-container">
+                        <button class="action-btn" onclick="nextQuizQuestion()">السؤال التالي ⬅️</button>
+                    </div>
+                </div>
+
+                <!-- Score Screen -->
+                <div class="score-screen" id="quiz-score-screen">
+                    <div class="cup-logo">🏆</div>
+                    <h2>رائع! لقد أكملت التحدي بنجاح!</h2>
+                    <div class="score-circle" id="quiz-final-score">0 / 6</div>
+                    <p id="score-evaluation">تقييم الأداء البرمجي الخاص بك</p>
+                    <button class="action-btn" onclick="restartQuiz()">إعادة التحدي 🔁</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section: Debugger -->
+        <div id="debugger" class="content-section">
+            <div class="card">
+                <div id="debug-playable">
+                    <div class="quiz-header">
+                        <span id="debug-step-text">تحدي البرمجة 1 من 3</span>
+                        <span>ابحث عن الخطأ البرمجي (Bug Hunter)</span>
+                    </div>
+                    <div class="question-text" id="debug-instruction">
+                        اضغط على السطر البرمجي الذي يحتوي على خطأ يعطل الكود أو يجعله غير آمن:
+                    </div>
+                    
+                    <div class="code-container" id="debug-code-container">
+                        <!-- Filled by JS -->
+                    </div>
+
+                    <div class="feedback-box" id="debug-feedback-box">
+                        <div class="feedback-title" id="debug-feedback-title">
+                            رائع!
+                        </div>
+                        <div class="feedback-desc" id="debug-feedback-desc">
+                            التفاصيل...
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 1.5rem; text-align: left; display: none;" id="debug-next-container">
+                        <button class="action-btn" onclick="nextDebugChallenge()">التحدي التالي ⬅️</button>
+                    </div>
+                </div>
+
+                <div class="score-screen" id="debug-score-screen">
+                    <div class="cup-logo">🕵️‍♂️</div>
+                    <h2>التحقيق اكتمل بنجاح!</h2>
+                    <div class="score-circle" id="debug-final-score">0 / 3</div>
+                    <p id="debug-evaluation">رائع! لقد كشفت الأخطاء الخفية.</p>
+                    <button class="action-btn" onclick="restartDebug()">إعادة التحقيق 🔁</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Wakeup Coffee Alarm -->
+    <div class="wakeup-banner" id="wakeup-alarm">
+        <div>
+            <h3 style="margin-bottom: 0.25rem;">🚨 منبه الاستيقاظ النشط!</h3>
+            <p style="font-size: 0.85rem; opacity: 0.9;">يبدو أنك بدأت تشعر بالنعاس! حان وقت شرب القهوة ☕</p>
+        </div>
+        <button class="wakeup-btn" onclick="stopWakeupAlarm()">صحصحت!</button>
+    </div>
+
+    <footer>
+        تطوير تفاعلي لمراجعة منهج PHP — جامع التركي &copy; 2026
+    </footer>
+
+    <script>
+        // Web Audio API Synthesizer for premium UI sounds
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        let audioCtx = null;
+
+        function playSound(type) {
+            try {
+                if (!audioCtx) {
+                    audioCtx = new AudioContextClass();
+                }
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                if (type === 'click') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.1);
+                    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                    gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.1);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.1);
+                } else if (type === 'correct') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
+                    osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1); // E5
+                    osc.frequency.setValueAtTime(783.99, audioCtx.currentTime + 0.2); // G5
+                    gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                    gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.35);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.35);
+                } else if (type === 'incorrect') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+                    osc.frequency.linearRampToValueAtTime(100, audioCtx.currentTime + 0.3);
+                    gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                    gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.3);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.3);
+                } else if (type === 'alarm') {
+                    // Funny synth alarm
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+                    osc.frequency.linearRampToValueAtTime(440, audioCtx.currentTime + 0.15);
+                    gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                    gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.25);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.25);
+                }
+            } catch (e) {
+                console.log("Audio not supported or blocked: ", e);
+            }
+        }
+
+        // Active score tracker
+        let totalScore = 0;
+        function updateScore(points) {
+            totalScore += points;
+            document.getElementById('score-counter').innerText = totalScore;
+        }
+
+        // Active alarm check (anti-sleep feature)
+        let idleTime = 0;
+        let alarmInterval = null;
+        let soundAlarmInterval = null;
+
+        function resetIdleTimer() {
+            idleTime = 0;
+            stopWakeupAlarm();
+        }
+
+        // Track user activity to trigger anti-sleep
+        window.onload = function() {
+            document.body.addEventListener('mousemove', resetIdleTimer);
+            document.body.addEventListener('keypress', resetIdleTimer);
+            document.body.addEventListener('click', resetIdleTimer);
+
+            // Increment idle counter every second
+            alarmInterval = setInterval(function() {
+                idleTime++;
+                if (idleTime >= 45) { // 45 seconds of absolute silence/inactivity
+                    triggerWakeupAlarm();
+                }
+            }, 1000);
+
+            // Render first question
+            loadQuestion();
+            loadDebugChallenge();
+        };
+
+        function triggerWakeupAlarm() {
+            document.getElementById('wakeup-alarm').style.display = 'flex';
+            if (!soundAlarmInterval) {
+                soundAlarmInterval = setInterval(function() {
+                    playSound('alarm');
+                }, 800);
+            }
+        }
+
+        function stopWakeupAlarm() {
+            document.getElementById('wakeup-alarm').style.display = 'none';
+            if (soundAlarmInterval) {
+                clearInterval(soundAlarmInterval);
+                soundAlarmInterval = null;
+            }
+            idleTime = 0;
+        }
+
+        // Tab Switching
+        function switchTab(tabId, btn) {
+            playSound('click');
+            // Hide all sections
+            const sections = document.querySelectorAll('.content-section');
+            sections.forEach(s => s.classList.remove('active'));
+            
+            // Remove active class from buttons
+            const buttons = document.querySelectorAll('.tab-btn');
+            buttons.forEach(b => b.classList.remove('active'));
+
+            // Show selected section
+            document.getElementById(tabId).classList.add('active');
+            btn.classList.add('active');
+        }
+
+        // --- Flashcards Logic ---
+        const flashcardsData = [
+            {
+                badge: "مقارنة برمجية",
+                frontTitle: "علامات الاقتباس المفردة مقابل المزدوجة",
+                frontDesc: "ما الفرق الجوهري في معالجة متغير مثل $name بداخلها؟",
+                backText: "علامات الاقتباس المزدوجة \"\" تقوم بمحاكاة وقراءة قيم المتغيرات وإبدالها بالنص، بينما علامات الاقتباس المفردة '' تطبع اسم المتغير حرفياً كـ '$name' دون معالجة."
+            },
+            {
+                badge: "قواعد البيانات",
+                frontTitle: "ما هي واجهة PDO في قواعد البيانات؟",
+                frontDesc: "لماذا نفضلها على دوال mysqli التقليدية في المشاريع الاحترافية؟",
+                backText: "لأن PDO (PHP Data Objects) توفر واجهة موحدة تدعم 12 نوعاً مختلفاً من قواعد البيانات (مثل MySQL, PostgreSQL, SQLite). كما تدعم معالجة الأخطاء بالاستثناءات وتوفر أماناً عالياً عبر Prepared Statements."
+            },
+            {
+                badge: "إرسال البيانات",
+                frontTitle: "المصفوفة الخارقة $_GET مقابل $_POST",
+                frontDesc: "أيهما تستخدم لإرسال كلمات المرور والبيانات السرية؟",
+                backText: "نستخدم $_POST لأنها ترسل البيانات بشكل مخفي داخل جسم طلب HTTP، عكس $_GET التي تضع البيانات مكشوفة في عنوان الرابط (URL). كما أن POST لا تملك حداً لحجم البيانات."
+            },
+            {
+                badge: "أمن الويب",
+                frontTitle: "ما فائدة Prepared Statements في PDO؟",
+                frontDesc: "كيف تحمي قاعدة البيانات من الاختراق؟",
+                backText: "تقوم بفصل الاستعلام (SQL) عن البيانات الممررة. يقوم الخادم بتحليل هيكل الاستعلام أولاً ثم إرفاق المعاملات، مما يمنع حقن كود خبيث بالكامل (SQL Injection)."
+            },
+            {
+                badge: "إدارة الخادم",
+                frontTitle: "الفرق بين المتغيرات المحلية والعامة والساكنة",
+                frontDesc: "متى نلجأ لاستخدام الكلمة المفتاحية STATIC؟",
+                backText: "نستخدم STATIC عندما نريد للمتغير داخل الدالة ألا يفقد قيمته بعد انتهاء تنفيذها، بحيث يحتفظ بآخر قيمة وصل إليها عند الاستدعاء التالي للدالة (مثل عداد الزوار أو العمليات)."
+            }
+        ];
+
+        let currentCardIndex = 0;
+
+        function flipCard() {
+            playSound('click');
+            const cardObj = document.getElementById('flashcard-obj');
+            cardObj.classList.toggle('flipped');
+        }
+
+        function updateCardContent() {
+            const data = flashcardsData[currentCardIndex];
+            const cardObj = document.getElementById('flashcard-obj');
+            cardObj.classList.remove('flipped');
+            
+            // Wait for flip back transition
+            setTimeout(() => {
+                document.getElementById('card-badge').innerText = data.badge;
+                document.getElementById('card-front-title').innerText = data.frontTitle;
+                document.getElementById('card-front-desc').innerText = data.frontDesc;
+                document.getElementById('card-back-text').innerHTML = data.backText.replace(/\n/g, '<br>');
+                document.getElementById('card-progress').innerText = `${currentCardIndex + 1} / ${flashcardsData.length}`;
+            }, 150);
+        }
+
+        function nextCard(event) {
+            event.stopPropagation();
+            playSound('click');
+            currentCardIndex = (currentCardIndex + 1) % flashcardsData.length;
+            updateCardContent();
+        }
+
+        function prevCard(event) {
+            event.stopPropagation();
+            playSound('click');
+            currentCardIndex = (currentCardIndex - 1 + flashcardsData.length) % flashcardsData.length;
+            updateCardContent();
+        }
+
+        // --- Quiz Logic ---
+        const quizData = [
+            {
+                module: "أساسيات لغة PHP",
+                question: "دالة برمجية في PHP تقوم بإرجاع قيمة منطقية (Boolean) عند الطباعة وتستخدم لطباعة السلاسل النصية الفردية:",
+                options: [
+                    { text: "print()", correct: true },
+                    { text: "echo()", correct: false },
+                    { text: "sprintf()", correct: false },
+                    { text: "printf()", correct: false }
+                ],
+                explanation: "دالة print() ترجع 1 (true) دائماً عند نجاح الإخراج، مما يسمح باستخدامها بداخل التعبيرات البرمجية المعقدة، عكس echo التي لا ترجع أي قيمة."
+            },
+            {
+                module: "أساسيات لغة PHP",
+                question: "أي من المعرفات البرمجية التالية يعتبر سكريبت صحيح لتعريف متغير بالمرجع (By Reference)؟",
+                options: [
+                    { text: "$var2 = $var1;", correct: false },
+                    { text: "$var2 = &$var1;", correct: true },
+                    { text: "$var2 = * $var1;", correct: false },
+                    { text: "define('$var2', $var1);", correct: false }
+                ],
+                explanation: "يتم استخدام العلامة & للإشارة للمتغير بالمرجع، مما يجعل المتغيرين يشيران إلى نفس المكان في الذاكرة وأي تعديل لأحدهما يؤثر على الآخر."
+            },
+            {
+                module: "هياكل التحكم والدوال",
+                question: "عند الحاجة لضمان تضمين ملف إعدادات مهم مرة واحدة فقط وبشكل حرج جداً يوقف البرنامج في حال غياب الملف:",
+                options: [
+                    { text: "include()", correct: false },
+                    { text: "include_once()", correct: false },
+                    { text: "require()", correct: false },
+                    { text: "require_once()", correct: true }
+                ],
+                explanation: "require_once() تمنع تكرار تضمين الملف، وبنفس الوقت توقف تشغيل الخادم فوراً وتصدر Fatal Error في حال غياب الملف لحماية النظام."
+            },
+            {
+                module: "التحقق والتعامل مع النماذج",
+                question: "أين يجب أن تقع دالة التوجيه header('Location: ...') في الكود المصدري لـ PHP؟",
+                options: [
+                    { text: "في نهاية الملف بعد وسم </html>", correct: false },
+                    { text: "قبل طباعة أي نص أو كود HTML أو مسافة فارغة إلى المتصفح", correct: true },
+                    { text: "بداخل وسم <head> فقط", correct: false },
+                    { text: "تحت وسم <body> مباشرة", correct: false }
+                ],
+                explanation: "دوال header ترسل ترويسات HTTP للمتصفح. يجب إرسال هذه الترويسات قبل البدء في كتابة محتوى الصفحة (HTML)، وإلا سيفشل التوجيه ويظهر خطأ Headers already sent."
+            },
+            {
+                module: "التحقق والتعامل مع النماذج",
+                question: "عند معالجة مجموعة Checkboxes برمجياً تحمل نفس الاسم، كيف يجب تسمية المدخل في كود HTML؟",
+                options: [
+                    { text: "name='choice'", correct: false },
+                    { text: "name='choice[]'", correct: true },
+                    { text: "name='choice_multiple'", correct: false },
+                    { text: "name='@choice'", correct: false }
+                ],
+                explanation: "وضع الأقواس المربعة [] يخبر PHP بمعالجة هذه المدخلات كمصفوفة (Array) تحتوي على كافة القيم التي قام المستخدم بتحديدها."
+            },
+            {
+                module: "الاتصال بـ PDO",
+                question: "لإغلاق اتصال قاعدة البيانات المفتوح عبر واجهة PDO بطريقة نظيفة وصحيحة:",
+                options: [
+                    { text: "$conn->close();", correct: false },
+                    { text: "unset($conn);", correct: false },
+                    { text: "$conn = null;", correct: true },
+                    { text: "mysql_close($conn);", correct: false }
+                ],
+                explanation: "في PDO، يتم إغلاق الاتصال بنجاح بمجرد تدمير الكائن عن طريق تعيين قيمة المتغير الذي يحمل الاتصال إلى null."
+            }
+        ];
+
+        let currentQuizIndex = 0;
+        let quizScore = 0;
+
+        function loadQuestion() {
+            const currentQ = quizData[currentQuizIndex];
+            
+            // Header stats
+            document.getElementById('quiz-question-number').innerText = `السؤال ${currentQuizIndex + 1} من ${quizData.length}`;
+            document.getElementById('quiz-module-name').innerText = currentQ.module;
+            
+            // Progress Bar
+            const percent = ((currentQuizIndex) / quizData.length) * 100;
+            document.getElementById('quiz-progress-bar').style.width = `${percent}%`;
+
+            // Question Text
+            document.getElementById('quiz-question-text').innerText = currentQ.question;
+
+            // Options List
+            const optionsList = document.getElementById('quiz-options-list');
+            optionsList.innerHTML = '';
+
+            currentQ.options.forEach((opt, idx) => {
+                const button = document.createElement('button');
+                button.className = 'option-item';
+                button.innerHTML = `<span>${opt.text}</span>`;
+                button.onclick = () => selectOption(button, opt.correct, currentQ.explanation);
+                optionsList.appendChild(button);
+            });
+
+            // Reset feedbacks
+            document.getElementById('quiz-feedback-box').style.display = 'none';
+            document.getElementById('quiz-next-container').style.display = 'none';
+        }
+
+        function selectOption(selectedBtn, isCorrect, explanation) {
+            const options = document.querySelectorAll('#quiz-options-list .option-item');
+            
+            options.forEach(opt => {
+                opt.classList.add('disabled');
+            });
+
+            if (isCorrect) {
+                selectedBtn.classList.add('correct');
+                playSound('correct');
+                quizScore++;
+                updateScore(10);
+                
+                document.getElementById('quiz-feedback-title').innerText = "✓ إجابة صحيحة!";
+                document.getElementById('quiz-feedback-title').style.color = "var(--success)";
+                document.getElementById('quiz-feedback-box').style.borderColor = "var(--success)";
+            } else {
+                selectedBtn.classList.add('incorrect');
+                playSound('incorrect');
+                
+                // Show the correct one
+                const currentQ = quizData[currentQuizIndex];
+                const correctIdx = currentQ.options.findIndex(o => o.correct);
+                options[correctIdx].classList.add('correct');
+
+                document.getElementById('quiz-feedback-title').innerText = "✗ إجابة خاطئة!";
+                document.getElementById('quiz-feedback-title').style.color = "var(--danger)";
+                document.getElementById('quiz-feedback-box').style.borderColor = "var(--danger)";
+            }
+
+            document.getElementById('quiz-feedback-desc').innerText = explanation;
+            document.getElementById('quiz-feedback-box').style.display = 'block';
+            document.getElementById('quiz-next-container').style.display = 'block';
+        }
+
+        function nextQuizQuestion() {
+            playSound('click');
+            currentQuizIndex++;
+            if (currentQuizIndex < quizData.length) {
+                loadQuestion();
+            } else {
+                showQuizResult();
+            }
+        }
+
+        function showQuizResult() {
+            document.getElementById('quiz-progress-bar').style.width = `100%`;
+            document.getElementById('quiz-playable').style.display = 'none';
+            
+            const scoreScreen = document.getElementById('quiz-score-screen');
+            scoreScreen.style.display = 'flex';
+            
+            document.getElementById('quiz-final-score').innerText = `${quizScore} / ${quizData.length}`;
+            
+            const eval = document.getElementById('score-evaluation');
+            if (quizScore === quizData.length) {
+                eval.innerText = "عبقري PHP! لقد أجبت على كافة الأسئلة بشكل صحيح 🥳";
+                eval.style.color = "var(--success)";
+            } else if (quizScore >= quizData.length / 2) {
+                eval.innerText = "عمل رائع! مستواك جيد جداً وجاهز للاختبار 👍";
+                eval.style.color = "var(--primary)";
+            } else {
+                eval.innerText = "تحتاج إلى مراجعة بطاقات الاستذكار مرة أخرى. يمكنك فعلها! 💪";
+                eval.style.color = "var(--danger)";
+            }
+        }
+
+        function restartQuiz() {
+            playSound('click');
+            currentQuizIndex = 0;
+            quizScore = 0;
+            document.getElementById('quiz-playable').style.display = 'block';
+            document.getElementById('quiz-score-screen').style.display = 'none';
+            loadQuestion();
+        }
+
+
+        // --- Debugger Game Logic ---
+        const debugChallenges = [
+            {
+                instruction: "المشكلة: المطور يحاول إعادة توجيه الصفحة بعد طباعة رسالة ترحيبية، وهو ما يسبب خطأ برمجي شهير.",
+                code: [
+                    "<?php",
+                    "echo 'Welcome to turkey mosque!';",
+                    "// إعادة توجيه المستخدم للقائمة الرئيسية",
+                    "header('Location: dashboard.php');",
+                    "exit();",
+                    "?>"
+                ],
+                errorLineIdx: 3, // index 3 -> header('Location...
+                explanation: "رائع! الخطأ يكمن في استدعاء الدالة header() بالسطر الرابع بعد وجود كود طباعة مخرجات (echo) بالسطر الثاني. التوجيه يجب أن يكون قبل طباعة أي نص على الإطلاق."
+            },
+            {
+                instruction: "المشكلة: تعريف دالة لحساب ضريبة القاعات بـ PHP، ولكن المطور ارتكب خطأ عند تحديد القيمة الافتراضية.",
+                code: [
+                    "<?php",
+                    "$tax_rate = 0.05;",
+                    "// دالة حساب السعر الإجمالي",
+                    "function calculate_hall_tax($price, $tax = $tax_rate) {",
+                    "    return $price + ($price * $tax);",
+                    "}",
+                    "?>"
+                ],
+                errorLineIdx: 3, // index 3 -> function calculate_hall_tax...
+                explanation: "أحسنت! لا يمكن إسناد متغيرات برمجية مثل $tax_rate كقيمة افتراضية لمعامل الدالة. قيم المعاملات الافتراضية يجب أن تكون ثوابت فقط (Constant Expressions) مثل 0.05."
+            },
+            {
+                instruction: "المشكلة: استعلام PDO لإدراج طالب جديد غير محمي ومكشوف بالكامل لثغرة حقن استعلامات SQL الخبيثة (SQL Injection).",
+                code: [
+                    "<?php",
+                    "$id = $_POST['id'];",
+                    "$name = $_POST['name'];",
+                    "// استعلام إدخال البيانات مباشرة بقاعدة البيانات",
+                    "$sql = \"INSERT INTO info (id, name) VALUES ($id, '$name')\";",
+                    "$conn->exec($sql);",
+                    "?>"
+                ],
+                errorLineIdx: 4, // index 4 -> $sql = INSERT...
+                explanation: "صحيح! الكود يقوم بدمج المتغيرات المأخوذة من المستخدم مباشرة داخل جملة SQL البرمجية. هذا يجعل النظام عرضة لاختراق SQL Injection. الحل الصحيح هو استخدام Prepared Statements."
+            }
+        ];
+
+        let currentDebugIndex = 0;
+        let debugScore = 0;
+        let selectedLineIdx = null;
+
+        function loadDebugChallenge() {
+            const challenge = debugChallenges[currentDebugIndex];
+            
+            document.getElementById('debug-step-text').innerText = `تحدي البرمجة ${currentDebugIndex + 1} من ${debugChallenges.length}`;
+            document.getElementById('debug-instruction').innerText = challenge.instruction;
+
+            const codeContainer = document.getElementById('debug-code-container');
+            codeContainer.innerHTML = '';
+            
+            challenge.code.forEach((line, idx) => {
+                const lineElement = document.createElement('span');
+                lineElement.className = 'code-line';
+                lineElement.innerText = `${idx + 1}:  ${line}`;
+                lineElement.onclick = () => selectCodeLine(idx, lineElement);
+                codeContainer.appendChild(lineElement);
+            });
+
+            document.getElementById('debug-feedback-box').style.display = 'none';
+            document.getElementById('debug-next-container').style.display = 'none';
+            selectedLineIdx = null;
+        }
+
+        function selectCodeLine(idx, element) {
+            if (selectedLineIdx !== null) return; // already answered
+            
+            selectedLineIdx = idx;
+            const challenge = debugChallenges[currentDebugIndex];
+
+            if (idx === challenge.errorLineIdx) {
+                element.classList.add('correct-line');
+                playSound('correct');
+                debugScore++;
+                updateScore(20);
+                
+                document.getElementById('debug-feedback-title').innerText = "✓ محقق برمجيات ذكي!";
+                document.getElementById('debug-feedback-title').style.color = "var(--success)";
+                document.getElementById('debug-feedback-box').style.borderColor = "var(--success)";
+            } else {
+                element.classList.add('incorrect-line');
+                playSound('incorrect');
+                
+                // Show the real error line
+                const lines = document.querySelectorAll('#debug-code-container .code-line');
+                lines[challenge.errorLineIdx].classList.add('correct-line');
+
+                document.getElementById('debug-feedback-title').innerText = "✗ التحقيق فشل!";
+                document.getElementById('debug-feedback-title').style.color = "var(--danger)";
+                document.getElementById('debug-feedback-box').style.borderColor = "var(--danger)";
+            }
+
+            document.getElementById('debug-feedback-desc').innerText = challenge.explanation;
+            document.getElementById('debug-feedback-box').style.display = 'block';
+            document.getElementById('debug-next-container').style.display = 'block';
+        }
+
+        function nextDebugChallenge() {
+            playSound('click');
+            currentDebugIndex++;
+            if (currentDebugIndex < debugChallenges.length) {
+                loadDebugChallenge();
+            } else {
+                showDebugResult();
+            }
+        }
+
+        function showDebugResult() {
+            document.getElementById('debug-playable').style.display = 'none';
+            
+            const scoreScreen = document.getElementById('debug-score-screen');
+            scoreScreen.style.display = 'flex';
+            
+            document.getElementById('debug-final-score').innerText = `${debugScore} / ${debugChallenges.length}`;
+            
+            const eval = document.getElementById('debug-evaluation');
+            if (debugScore === debugChallenges.length) {
+                eval.innerText = "مذهل! أنت مبرمج محقق ممتاز، لا يوجد كود به أخطاء يستطيع الهروب منك! 🕵️‍♂️";
+                eval.style.color = "var(--success)";
+            } else {
+                eval.innerText = "تحتاج إلى تركيز أكبر في فحص الأكواد المكتوبة. جرب مرة أخرى لتنمية مهاراتك!";
+                eval.style.color = "var(--primary)";
+            }
+        }
+
+        function restartDebug() {
+            playSound('click');
+            currentDebugIndex = 0;
+            debugScore = 0;
+            document.getElementById('debug-playable').style.display = 'block';
+            document.getElementById('debug-score-screen').style.display = 'none';
+            loadDebugChallenge();
+        }
+    </script>
+</body>
+</html>

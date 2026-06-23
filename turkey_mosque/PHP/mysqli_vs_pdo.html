@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مقارن PDO و MySQLi التفاعلي — مجلد SRE</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&family=Fira+Code:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0d1117;
+            --card-bg: rgba(22, 30, 49, 0.4);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --primary: #c9a84c;
+            --primary-glow: rgba(201, 168, 76, 0.3);
+            --secondary: #58a6ff;
+            --success: #2ea043;
+            --danger: #f85149;
+            --text-main: #c9d1d9;
+            --text-light: #f0f6fc;
+            --text-muted: #8b949e;
+            --font-main: 'Cairo', sans-serif;
+            --font-code: 'Fira Code', 'Courier New', monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(88, 166, 255, 0.03) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(201, 168, 76, 0.03) 0px, transparent 50%);
+            color: var(--text-main);
+            font-family: var(--font-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--card-border);
+            background: rgba(13, 17, 23, 0.85);
+            backdrop-filter: blur(8px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-container {
+            max-width: 1100px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        h1 {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--text-light);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        h1 span {
+            color: var(--primary);
+        }
+
+        .points-badge {
+            background: rgba(201, 168, 76, 0.1);
+            border: 1px solid rgba(201, 168, 76, 0.3);
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-weight: 700;
+            color: var(--primary);
+            font-size: 0.9rem;
+        }
+
+        .main-container {
+            flex: 1;
+            max-width: 1100px;
+            width: 100%;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        /* Mode Selector Tabs */
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            background: rgba(22, 30, 49, 0.6);
+            padding: 0.4rem;
+            border-radius: 12px;
+            border: 1px solid var(--card-border);
+        }
+
+        .tab-btn {
+            flex: 1;
+            background: transparent;
+            border: none;
+            padding: 0.8rem;
+            color: var(--text-muted);
+            font-family: var(--font-main);
+            font-weight: 700;
+            font-size: 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .tab-btn.active {
+            background: var(--primary);
+            color: #0d1117;
+            box-shadow: 0 4px 15px var(--primary-glow);
+        }
+
+        .section-content {
+            display: none;
+            animation: fadeIn 0.35s ease-out forwards;
+        }
+
+        .section-content.active {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Card container */
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+            backdrop-filter: blur(8px);
+        }
+
+        /* 1. Comparison Board layout */
+        .op-selector {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .op-btn {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            font-family: var(--font-main);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .op-btn:hover, .op-btn.active {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: rgba(201, 168, 76, 0.05);
+        }
+
+        .op-btn.active {
+            background: rgba(201, 168, 76, 0.12);
+        }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .comparison-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .code-panel {
+            background: #090c10;
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .panel-header {
+            padding: 0.75rem 1.25rem;
+            background: rgba(255, 255, 255, 0.02);
+            border-bottom: 1px solid var(--card-border);
+            font-weight: 700;
+            font-size: 0.95rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .badge-pdo {
+            color: var(--secondary);
+            background: rgba(88, 166, 255, 0.1);
+            border: 1px solid rgba(88, 166, 255, 0.2);
+            padding: 0.15rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+        }
+
+        .badge-mysqli {
+            color: var(--primary);
+            background: rgba(201, 168, 76, 0.1);
+            border: 1px solid rgba(201, 168, 76, 0.2);
+            padding: 0.15rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+        }
+
+        .code-body {
+            padding: 1.25rem;
+            font-family: var(--font-code);
+            font-size: 0.88rem;
+            direction: ltr;
+            text-align: left;
+            overflow-x: auto;
+            line-height: 1.6;
+            white-space: pre;
+        }
+
+        .highlight-word {
+            background: rgba(88, 166, 255, 0.15);
+            border-bottom: 2px solid var(--secondary);
+            border-radius: 2px;
+            padding: 0 0.2rem;
+            cursor: help;
+            font-weight: 700;
+            transition: background 0.2s;
+        }
+
+        .highlight-word:hover {
+            background: rgba(88, 166, 255, 0.3);
+        }
+
+        .highlight-word.mysqli-hl {
+            background: rgba(201, 168, 76, 0.15);
+            border-bottom-color: var(--primary);
+        }
+
+        .highlight-word.mysqli-hl:hover {
+            background: rgba(201, 168, 76, 0.3);
+        }
+
+        .explanation-box {
+            background: rgba(88, 166, 255, 0.05);
+            border: 1px dashed rgba(88, 166, 255, 0.2);
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin-top: 1rem;
+            display: none;
+            animation: slideDown 0.25s ease-out forwards;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 2. Interactive Game Quiz */
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            font-size: 0.95rem;
+            color: var(--text-muted);
+        }
+
+        .progress-container {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--primary);
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .question-box {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: var(--text-light);
+            line-height: 1.5;
+        }
+
+        .code-question {
+            background: #090c10;
+            border: 1px solid var(--card-border);
+            border-radius: 10px;
+            padding: 1rem;
+            font-family: var(--font-code);
+            font-size: 0.9rem;
+            direction: ltr;
+            text-align: left;
+            margin-bottom: 1.5rem;
+            overflow-x: auto;
+        }
+
+        .options-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .option-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--card-border);
+            border-radius: 10px;
+            padding: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.95rem;
+        }
+
+        .option-card:hover {
+            border-color: var(--primary);
+            background: rgba(255, 255, 255, 0.04);
+            transform: translateX(-4px);
+        }
+
+        .option-card.correct {
+            border-color: var(--success) !important;
+            background: rgba(46, 160, 67, 0.15) !important;
+            color: #d1fae5;
+        }
+
+        .option-card.incorrect {
+            border-color: var(--danger) !important;
+            background: rgba(248, 81, 73, 0.15) !important;
+            color: #fee2e2;
+        }
+
+        .option-card.disabled {
+            pointer-events: none;
+            opacity: 0.6;
+        }
+
+        .option-card.disabled.correct, .option-card.disabled.incorrect {
+            opacity: 1;
+        }
+
+        .result-panel {
+            text-align: center;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+            padding: 2rem 0;
+        }
+
+        .score-display {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            border: 6px solid var(--primary);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: var(--primary);
+            background: rgba(201, 168, 76, 0.05);
+            margin: 1rem 0;
+        }
+
+        .action-btn {
+            background: var(--primary);
+            color: #0d1117;
+            font-family: var(--font-main);
+            font-weight: 700;
+            border: none;
+            padding: 0.8rem 1.8rem;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 1rem;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px var(--primary-glow);
+        }
+
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            border-top: 1px solid var(--card-border);
+            margin-top: auto;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-container">
+            <h1>⚙️ مقارن الاكواد <span>PDO مقابل MySQLi</span></h1>
+            <div class="points-badge">
+                النقاط: <span id="score-val">0</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <!-- Tabs Navigation -->
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchSection('explorer', this)">
+                📁 مستكشف الشفرة البرمجية
+            </button>
+            <button class="tab-btn" onclick="switchSection('converter-game', this)">
+                🎮 تحدي التحويل البرمجي
+            </button>
+        </div>
+
+        <!-- SECTION: explorer -->
+        <div id="explorer" class="section-content active">
+            <div class="card">
+                <div class="op-selector">
+                    <button class="op-btn active" onclick="loadComparison('conn', this)">🔗 الاتصال بالخادم</button>
+                    <button class="op-btn" onclick="loadComparison('insert', this)">➕ دالة الإدخال (Insert)</button>
+                    <button class="op-btn" onclick="loadComparison('delete', this)">❌ دالة الحذف (Delete)</button>
+                    <button class="op-btn" onclick="loadComparison('update', this)">🔄 دالة التحديث (Update)</button>
+                    <button class="op-btn" onclick="loadComparison('search', this)">🔍 دالة البحث (Search)</button>
+                </div>
+
+                <p style="font-size: 0.95rem; color: var(--text-muted); margin-bottom: 1.5rem;">
+                    💡 اضغط على الكلمات الملونة باللون الأزرق أو الذهبي بداخل الأكواد لفهم وظيفتها والمقارنة الفورية بين التقنيتين.
+                </p>
+
+                <div class="comparison-grid">
+                    <!-- Left: PDO -->
+                    <div class="code-panel">
+                        <div class="panel-header">
+                            <span>ملف PDO من مجلد sre</span>
+                            <span class="badge-pdo">PDO</span>
+                        </div>
+                        <div class="code-body" id="pdo-code-body">
+                            <!-- Code filled by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Right: MySQLi -->
+                    <div class="code-panel">
+                        <div class="panel-header">
+                            <span>الكود المقابل بـ MySQLi</span>
+                            <span class="badge-mysqli">MySQLi</span>
+                        </div>
+                        <div class="code-body" id="mysqli-code-body">
+                            <!-- Code filled by JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Explanation Popup Box -->
+                <div class="explanation-box" id="info-popup">
+                    <h4 style="color: var(--primary); margin-bottom: 0.5rem;" id="info-title">شرح العنصر البرمجي</h4>
+                    <p style="font-size: 0.95rem; line-height: 1.6;" id="info-desc">اضغط على الكلمات المظللة بالأكواد لإظهار الشرح هنا.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION: converter-game -->
+        <div id="converter-game" class="section-content">
+            <div class="card">
+                <div id="game-playable">
+                    <div class="game-header">
+                        <span id="game-index-text">تحدي 1 من 5</span>
+                        <span>مترجم الأكواد المحترف</span>
+                    </div>
+                    
+                    <div class="progress-container">
+                        <div class="progress-bar" id="game-progress-bar"></div>
+                    </div>
+
+                    <div class="question-box" id="game-question">
+                        السؤال هنا...
+                    </div>
+
+                    <div class="code-question" id="game-code-box">
+                        الكود هنا...
+                    </div>
+
+                    <div class="options-grid" id="game-options-container">
+                        <!-- Options filled by JS -->
+                    </div>
+
+                    <div class="explanation-box" id="game-feedback-box" style="margin-top: 1.5rem;">
+                        <h4 style="color: var(--success); margin-bottom: 0.5rem;" id="game-feedback-title">✓ إجابة صحيحة</h4>
+                        <p style="font-size: 0.95rem;" id="game-feedback-desc">شرح توضيحي للفرق...</p>
+                    </div>
+
+                    <div style="margin-top: 1.5rem; text-align: left; display: none;" id="game-next-container">
+                        <button class="action-btn" onclick="nextGameQuestion()">التحدي التالي ⬅️</button>
+                    </div>
+                </div>
+
+                <!-- Game Result Screen -->
+                <div class="result-panel" id="game-result-panel">
+                    <div style="font-size: 4rem;">🥳</div>
+                    <h2>رائع! انتهيت من تحدي تحويل الأكواد بنجاح!</h2>
+                    <div class="score-display" id="game-final-score">0 / 5</div>
+                    <p id="game-evaluation" style="color: var(--primary); font-weight: 600;">تقييم مستواك الفني...</p>
+                    <button class="action-btn" onclick="restartGame()">إعادة التحدي من جديد 🔁</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        مقارن الأكواد التفاعلي لمجلد SRE — &copy; 2026
+    </footer>
+
+    <script>
+        // Sound effects via Web Audio API
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        let audioCtx = null;
+
+        function playSound(type) {
+            try {
+                if (!audioCtx) {
+                    audioCtx = new AudioContextClass();
+                }
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                if (type === 'click') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(500, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(900, audioCtx.currentTime + 0.08);
+                    gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+                    gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.08);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.08);
+                } else if (type === 'correct') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
+                    osc.frequency.setValueAtTime(783.99, audioCtx.currentTime + 0.08); // G5
+                    osc.frequency.setValueAtTime(1046.50, audioCtx.currentTime + 0.16); // C6
+                    gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+                    gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.3);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.3);
+                } else if (type === 'incorrect') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(180, audioCtx.currentTime);
+                    osc.frequency.linearRampToValueAtTime(90, audioCtx.currentTime + 0.25);
+                    gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                    gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.25);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.25);
+                }
+            } catch(e) {
+                console.log("Audio contexts blocked or not supported: ", e);
+            }
+        }
+
+        // Section tab switching
+        function switchSection(sectionId, btn) {
+            playSound('click');
+            document.querySelectorAll('.section-content').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            
+            document.getElementById(sectionId).classList.add('active');
+            btn.classList.add('active');
+        }
+
+        // --- Dictionary of Highlights & Explanations ---
+        const codeExplanations = {
+            "PDO_class": {
+                title: "PDO (PHP Data Objects)",
+                desc: "كلاس اتصال حديث ومرن. يقوم باستقبال بارامترات الاتصال (نوع القاعدة، المستضيف، اسم القاعدة، اسم المستخدم، الباسورد) ككائن واحد متكامل."
+            },
+            "setAttribute": {
+                title: "دالة setAttribute()",
+                desc: "تستخدم لتعيين خصائص كائن الاتصال. نقوم هنا بتعيين نظام إمساك الأخطاء وتوجيهها كاستثناءات (PDO::ERRMODE_EXCEPTION) لتسهيل التقاطها بـ try-catch."
+            },
+            "PDOException": {
+                title: "PDOException",
+                desc: "كلاس مخصص لمعالجة وإمساك أخطاء قواعد البيانات الناتجة عن PDO عند استخدام كتل try-catch."
+            },
+            "mysqli_class": {
+                title: "mysqli كلاس الاتصال",
+                desc: "الكلاس الرئيسي لـ MySQLi. يستقبل البيانات الأربعة الأساسية للاتصال منفصلة (المستضيف، المستخدم، كلمة المرور، وقاعدة البيانات)."
+            },
+            "set_charset": {
+                title: "set_charset()",
+                desc: "دالة هامة لضبط ترميز الاتصال مع قاعدة البيانات ليكون UTF-8، مما يضمن عرض الحروف العربية بشكل صحيح تماماً دون علامات استفهام."
+            },
+            "pdo_exec": {
+                title: "$conn->exec()",
+                desc: "تستخدم في PDO لتنفيذ استعلامات التعديل (مثل INSERT, UPDATE, DELETE) التي لا ترجع صفوف بيانات، وتُرجع عدد الصفوف المتأثرة مباشرة."
+            },
+            "mysqli_prepare": {
+                title: "$conn->prepare()",
+                desc: "في MySQLi، تقوم هذه الدالة بتجهيز الاستعلام المجهز (Prepared Statement) وفصل شيفرة الـ SQL عن المدخلات للحماية الفائقة من الاختراق."
+            },
+            "bind_param": {
+                title: "$stmt->bind_param()",
+                desc: "في MySQLi، تستخدم لربط البيانات المدخلة بالحوافظ المكانية (?). المعامل الأول يحدد أنواع البيانات: i للرقم، s للنص، d للعشري."
+            },
+            "mysqli_execute": {
+                title: "$stmt->execute()",
+                desc: "تقوم بتنفيذ الاستعلام المجهز بعد ربط كافة المعاملات بنجاح. ترجع true عند النجاح وfalse عند الفشل."
+            },
+            "pdo_prepare": {
+                title: "$conn->prepare()",
+                desc: "تجهيز استعلام مجهز في PDO. يقوم بإعداد الخادم لاستقبال الاستعلام وفصله عن المتغيرات لحماية قصوى."
+            },
+            "pdo_execute": {
+                title: "$stmt->execute()",
+                desc: "تنفيذ الاستعلام المجهز في PDO، ويمكن تمرير مصفوفة تحتوي على المتغيرات المقابلة لعلامات الاستفهام مباشرة بداخلها."
+            },
+            "fetch_obj": {
+                title: "PDO::FETCH_OBJ",
+                desc: "أحد أنماط الجلب في PDO، يخبر المحرك بجلب كل صف ككائن (Object) مما يتيح الوصول للحقول برمز السهم -> (مثل $row->name)."
+            },
+            "get_result": {
+                title: "$stmt->get_result()",
+                desc: "في MySQLi، تستخدم لجلب نتيجة الاستعلام المجهز (Result Set) لتتمكن من استخدام دوال الجلب العادية مثل fetch_assoc."
+            },
+            "fetch_assoc": {
+                title: "fetch_assoc()",
+                desc: "في MySQLi، تقوم بجلب الصف الحالي من النتائج كمصفوفة ترابطية مفاتيحها هي أسماء الأعمدة (مثل $row['name'])."
+            },
+            "rowCount": {
+                title: "$rows->rowCount()",
+                desc: "دالة في PDO تعيد عدد الصفوف المتأثرة بالاستعلام الأخير أو عدد الصفوف الناتجة عن جملة SELECT."
+            },
+            "num_rows": {
+                title: "$result_set->num_rows",
+                desc: "في MySQLi، تعيد عدد الصفوف الناتجة عن استعلام SELECT الأخير المجلوب من قاعدة البيانات."
+            }
+        };
+
+        function showInfo(key) {
+            playSound('click');
+            const data = codeExplanations[key];
+            if (data) {
+                const box = document.getElementById('info-popup');
+                document.getElementById('info-title').innerText = data.title;
+                document.getElementById('info-desc').innerText = data.desc;
+                box.style.display = 'block';
+            }
+        }
+
+        // --- Comparative Code Library ---
+        const comparisons = {
+            "conn": {
+                pdo: `<?php
+try {
+    $conn = new <span class="highlight-word" onclick="showInfo('PDO_class')">PDO</span>("mysql:host=localhost;dbname=student", "root", "");
+    $conn-><span class="highlight-word" onclick="showInfo('setAttribute')">setAttribute</span>(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    echo "Connected successfully";
+} catch(<span class="highlight-word" onclick="showInfo('PDOException')">PDOException</span> $e) {
+    echo "Error :" . $e->getMessage();
+}
+?>`,
+                mysqli: `<?php
+try {
+    $conn = new <span class="highlight-word mysqli-hl" onclick="showInfo('mysqli_class')">mysqli</span>("localhost", "root", "", "student");
+    if ($conn->connect_error) {
+        throw new Exception($conn->connect_error);
+    }
+    $conn-><span class="highlight-word mysqli-hl" onclick="showInfo('set_charset')">set_charset</span>("utf8");
+    echo "Connected successfully";
+} catch(Exception $e) {
+    echo "Error : " . $e->getMessage();
+}
+?>`
+            },
+            "insert": {
+                pdo: `<?php
+// إدخال مباشر (غير آمن بالكامل كما في sre)
+try {
+    $sql = "INSERT INTO info VALUES ($id, '$name', '$gender', '$n')";
+    $conn-><span class="highlight-word" onclick="showInfo('pdo_exec')">exec</span>($sql);
+    echo "Record insert successfully";
+} catch(PDOException $e) {
+    echo $e->getMessage();
+}
+?>`,
+                mysqli: `<?php
+// إدخال باستخدام الاستعلام المجهز (آمن 100%)
+$sql = "INSERT INTO info (id, name, gender, nation) VALUES (?, ?, ?, ?)";
+$stmt = $conn-><span class="highlight-word mysqli-hl" onclick="showInfo('mysqli_prepare')">prepare</span>($sql);
+
+if ($stmt) {
+    // ربط المعاملات: i للرقم، s للنص
+    $stmt-><span class="highlight-word mysqli-hl" onclick="showInfo('bind_param')">bind_param</span>("isss", $id, $name, $gender, $n);
+    
+    if ($stmt-><span class="highlight-word mysqli-hl" onclick="showInfo('mysqli_execute')">execute</span>()) {
+        echo "Record insert successfully";
+    }
+    $stmt->close();
+}
+?>`
+            },
+            "delete": {
+                pdo: `<?php
+// الحذف المتعدد بحلقة التكرار في sre
+try {
+    foreach($std as $value) {
+        $sql = "delete from info where id=$value";
+        $conn-><span class="highlight-word" onclick="showInfo('pdo_exec')">exec</span>($sql);
+        echo "Record deleted successfully";
+    }
+} catch(PDOException $e) {
+    echo $e->getMessage();
+}
+?>`,
+                mysqli: `<?php
+// حذف متعدد مجهز بـ MySQLi
+$sql = "DELETE FROM info WHERE id = ?";
+$stmt = $conn-><span class="highlight-word mysqli-hl" onclick="showInfo('mysqli_prepare')">prepare</span>($sql);
+
+if ($stmt) {
+    foreach($std as $value) {
+        $stmt-><span class="highlight-word mysqli-hl" onclick="showInfo('bind_param')">bind_param</span>("i", $value);
+        $stmt-><span class="highlight-word mysqli-hl" onclick="showInfo('mysqli_execute')">execute</span>();
+        echo "Record deleted successfully";
+    }
+    $stmt->close();
+}
+?>`
+            },
+            "update": {
+                pdo: `<?php
+try {
+    $query = "UPDATE info SET name='$name', gender='$gender', nation='$nation' where id=$id";
+    $conn-><span class="highlight-word" onclick="showInfo('pdo_exec')">exec</span>($query);
+    echo "Record updat successfully";
+} catch(PDOException $e) {
+    echo $e->getMessage();
+}
+?>`,
+                mysqli: `<?php
+// التعديل الآمن في MySQLi
+$sql = "UPDATE info SET name=?, gender=?, nation=? WHERE id=?";
+$stmt = $conn-><span class="highlight-word mysqli-hl" onclick="showInfo('mysqli_prepare')">prepare</span>($sql);
+
+if ($stmt) {
+    $stmt-><span class="highlight-word mysqli-hl" onclick="showInfo('bind_param')">bind_param</span>("sssi", $name, $gender, $nation, $id);
+    if ($stmt-><span class="highlight-word mysqli-hl" onclick="showInfo('mysqli_execute')">execute</span>()) {
+        echo "Record updated successfully";
+    }
+    $stmt->close();
+}
+?>`
+            },
+            "search": {
+                pdo: `<?php
+// البحث بـ PDO في ملف fun_search_pdo.php
+$sql = "SELECT * FROM info where nation=?";
+$rows = $conn-><span class="highlight-word" onclick="showInfo('pdo_prepare')">prepare</span>($sql);
+$rows-><span class="highlight-word" onclick="showInfo('pdo_execute')">execute</span>(array($nat));
+
+$n = $rows-><span class="highlight-word" onclick="showInfo('rowCount')">rowCount</span>();
+if ($n > 0) {
+    while($row = $rows->fetch(<span class="highlight-word" onclick="showInfo('fetch_obj')">PDO::FETCH_OBJ</span>)) {
+         echo $row->id . ":" . $row->name;
+    }
+}
+?>`,
+                mysqli: `<?php
+// البحث الآمن المقابل في MySQLi
+$sql = "SELECT * FROM info WHERE nation = ?";
+$stmt = $conn-><span class="highlight-word mysqli-hl" onclick="showInfo('mysqli_prepare')">prepare</span>($sql);
+
+if ($stmt) {
+    $stmt-><span class="highlight-word mysqli-hl" onclick="showInfo('bind_param')">bind_param</span>("s", $nat);
+    $stmt-><span class="highlight-word mysqli-hl" onclick="showInfo('mysqli_execute')">execute</span>();
+    
+    // جلب النتيجة بالكامل
+    $result_set = $stmt-><span class="highlight-word mysqli-hl" onclick="showInfo('get_result')">get_result</span>();
+    $num_rows = $result_set-><span class="highlight-word mysqli-hl" onclick="showInfo('num_rows')">num_rows</span>;
+    
+    if ($num_rows > 0) {
+        while($row = $result_set-><span class="highlight-word mysqli-hl" onclick="showInfo('fetch_assoc')">fetch_assoc</span>()) {
+             echo $row['id'] . ":" . $row['name'];
+        }
+    }
+    $stmt->close();
+}
+?>`
+            }
+        };
+
+        function loadComparison(key, btn) {
+            playSound('click');
+            
+            // Highlight button
+            document.querySelectorAll('.op-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            // Set content
+            const data = comparisons[key];
+            document.getElementById('pdo-code-body').innerHTML = data.pdo;
+            document.getElementById('mysqli-code-body').innerHTML = data.mysqli;
+
+            // Reset info box
+            document.getElementById('info-popup').style.display = 'none';
+        }
+
+        // Load connection by default
+        loadComparison('conn', document.querySelector('.op-btn'));
+
+        // --- CONVERTER GAME LOGIC ---
+        const gameQuestions = [
+            {
+                question: "ما هو المقابل الصحيح في MySQLi لإنشاء كائن اتصال جديد بدلاً من كود PDO التالي؟",
+                code: "$conn = new PDO('mysql:host=localhost;dbname=student', 'root', '');",
+                options: [
+                    { text: "$conn = mysqli_connect('localhost', 'root', '', 'student');", correct: false },
+                    { text: "$conn = new mysqli('localhost', 'root', '', 'student');", correct: true },
+                    { text: "$conn = new MySQLiConnection('student');", correct: false }
+                ],
+                explanation: "الخيار الثاني هو الأسلوب الكائني الصحيح لـ MySQLi حيث ننشئ كائناً جديداً من كلاس mysqli ونمرر له المتغيرات الأربعة مستقلة."
+            },
+            {
+                question: "عند معالجة استعلام إدخال (Insert) لا يعود بصفوف، قمت بـ PDO باستخدام $conn->exec($sql). ما هو المقابل المباشر لها في MySQLi؟",
+                code: "$conn->exec($sql); // في PDO",
+                options: [
+                    { text: "$conn->query($sql);", correct: true },
+                    { text: "$conn->execute($sql);", correct: false },
+                    { text: "$conn->execute_query($sql);", correct: false }
+                ],
+                explanation: "في MySQLi، الدالة query() تستخدم لتنفيذ جميع أنواع الاستعلامات العادية مباشرة، سواء كانت ترجع صفوفاً (SELECT) أو تعدل البيانات (INSERT, UPDATE, DELETE)."
+            },
+            {
+                question: "كيف تقوم بربط المدخلات النصية بالحوافظ المكانية (؟) في استعلام MySQLi المجهز بدلاً من إرسال مصفوفة في PDO؟",
+                code: "$rows->execute(array($nat)); // في PDO",
+                options: [
+                    { text: "$stmt->bind_param('s', $nat);", correct: true },
+                    { text: "$stmt->bindValue(':nat', $nat);", correct: false },
+                    { text: "$stmt->bind($nat);", correct: false }
+                ],
+                explanation: "نستخدم دالة bind_param مع كتابة نوع المتغير 's' (يعني string) لربط قيمة المتغير بالنجم أو علامة الاستفهام في الاستعلام المجهز."
+            },
+            {
+                question: "كيف تحصل على عدد الصفوف المرجعة من استعلام SELECT في MySQLi كبديل للدالة rowCount() في PDO؟",
+                code: "$n = $rows->rowCount(); // في PDO",
+                options: [
+                    { text: "$n = $result_set->num_rows;", correct: true },
+                    { text: "$n = $result_set->count_rows();", correct: false },
+                    { text: "$n = count($result_set);", correct: false }
+                ],
+                explanation: "في MySQLi، بعد جلب النتيجة عبر get_result()، يمكننا قراءة الخاصية num_rows لمعرفة عدد الصفوف الراجعة من قاعدة البيانات مباشرة."
+            },
+            {
+                question: "ما هي الدالة المكافئة لجلب البيانات كـ Object بدلاً من مصفوفة ترابطية في MySQLi؟",
+                code: "$row = $rows->fetch(PDO::FETCH_OBJ); // في PDO",
+                options: [
+                    { text: "$row = $result_set->fetch_object();", correct: true },
+                    { text: "$row = $result_set->fetch_assoc();", correct: false },
+                    { text: "$row = $result_set->fetch_row();", correct: false }
+                ],
+                explanation: "دالة fetch_object() في MySQLi تقوم بجلب الصف الحالي ككائن مجهول، مما يتيح الوصول للحقول عبر رمز السهم مثل $row->name، تماماً مثل FETCH_OBJ في PDO."
+            }
+        ];
+
+        let gameIndex = 0;
+        let gamePoints = 0;
+        let localScore = 0;
+
+        function updateLocalScore(amount) {
+            localScore += amount;
+            document.getElementById('score-val').innerText = localScore;
+        }
+
+        function loadGameQuestion() {
+            const currentQ = gameQuestions[gameIndex];
+            
+            // Header information
+            document.getElementById('game-index-text').innerText = `تحدي ${gameIndex + 1} من ${gameQuestions.length}`;
+            
+            // Progress Bar
+            const percent = (gameIndex / gameQuestions.length) * 100;
+            document.getElementById('game-progress-bar').style.width = `${percent}%`;
+
+            // Question Text & Code
+            document.getElementById('game-question').innerText = currentQ.question;
+            document.getElementById('game-code-box').innerText = currentQ.code;
+
+            // Options List
+            const optionsContainer = document.getElementById('game-options-container');
+            optionsContainer.innerHTML = '';
+
+            currentQ.options.forEach((opt, idx) => {
+                const optBtn = document.createElement('div');
+                optBtn.className = 'option-card';
+                optBtn.innerHTML = `<span>${opt.text}</span>`;
+                optBtn.onclick = () => selectGameOption(optBtn, opt.correct, currentQ.explanation);
+                optionsContainer.appendChild(optBtn);
+            });
+
+            // Reset blocks
+            document.getElementById('game-feedback-box').style.display = 'none';
+            document.getElementById('game-next-container').style.display = 'none';
+        }
+
+        function selectGameOption(selectedBtn, isCorrect, explanation) {
+            const options = document.querySelectorAll('#game-options-container .option-card');
+            
+            options.forEach(opt => {
+                opt.classList.add('disabled');
+            });
+
+            const feedbackTitle = document.getElementById('game-feedback-title');
+            const feedbackBox = document.getElementById('game-feedback-box');
+
+            if (isCorrect) {
+                selectedBtn.classList.add('correct');
+                playSound('correct');
+                gamePoints++;
+                updateLocalScore(20);
+                
+                feedbackTitle.innerText = "✓ إجابة صحيحة! أحسنت الترجمة.";
+                feedbackTitle.style.color = "var(--success)";
+                feedbackBox.style.borderColor = "var(--success)";
+            } else {
+                selectedBtn.classList.add('incorrect');
+                playSound('incorrect');
+                
+                // Highlight correct one
+                const currentQ = gameQuestions[gameIndex];
+                const correctIdx = currentQ.options.findIndex(o => o.correct);
+                options[correctIdx].classList.add('correct');
+
+                feedbackTitle.innerText = "✗ إجابة خاطئة! ركّز في الفروقات.";
+                feedbackTitle.style.color = "var(--danger)";
+                feedbackBox.style.borderColor = "var(--danger)";
+            }
+
+            document.getElementById('game-feedback-desc').innerText = explanation;
+            feedbackBox.style.display = 'block';
+            document.getElementById('game-next-container').style.display = 'block';
+        }
+
+        function nextGameQuestion() {
+            playSound('click');
+            gameIndex++;
+            if (gameIndex < gameQuestions.length) {
+                loadGameQuestion();
+            } else {
+                showGameResult();
+            }
+        }
+
+        function showGameResult() {
+            document.getElementById('game-progress-bar').style.width = `100%`;
+            document.getElementById('game-playable').style.display = 'none';
+            
+            const resultPanel = document.getElementById('game-result-panel');
+            resultPanel.style.display = 'flex';
+            
+            document.getElementById('game-final-score').innerText = `${gamePoints} / ${gameQuestions.length}`;
+            
+            const eval = document.getElementById('game-evaluation');
+            if (gamePoints === gameQuestions.length) {
+                eval.innerText = "مثالي! لقد أتقنت الفروقات بين PDO و MySQLi بشكل كامل 🎓🏆";
+                eval.style.color = "var(--success)";
+            } else if (gamePoints >= gameQuestions.length / 2) {
+                eval.innerText = "مستوى جيد جداً! أنت مستعد للبدء بكتابة الأكواد العملية.";
+                eval.style.color = "var(--primary)";
+            } else {
+                eval.innerText = "أنصحك بمراجعة مستكشف الأكواد مرة أخرى للتركيز على الفروقات.";
+                eval.style.color = "var(--danger)";
+            }
+        }
+
+        function restartGame() {
+            playSound('click');
+            gameIndex = 0;
+            gamePoints = 0;
+            document.getElementById('game-playable').style.display = 'block';
+            document.getElementById('game-result-panel').style.display = 'none';
+            loadGameQuestion();
+        }
+
+        // Load first question on load
+        loadGameQuestion();
+    </script>
+</body>
+</html>

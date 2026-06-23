@@ -1,0 +1,311 @@
+/* ==========================================
+   style.css - نظام حجز قاعة الجامع
+   بنفس أسلوب ملف sre/style.css
+   ========================================== */
+
+/* إعادة ضبط بسيطة */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+/* خلفية موحدة لكل الصفحات */
+body {
+    font-family: "Segoe UI", Arial, sans-serif;
+    background: linear-gradient(135deg, #1a6b3c, #2e8b57);
+    min-height: 100vh;
+    color: #333;
+    direction: rtl;
+}
+
+/* حاوية عامة */
+.container {
+    max-width: 1100px;
+    margin: 40px auto;
+    background: #f0fff4;
+    padding: 25px 30px;
+    border-radius: 14px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.18);
+}
+
+/* النماذج البسيطة (login / register) */
+.form-box {
+    max-width: 400px;
+    margin: 70px auto;
+    background: #f7fff9;
+    padding: 28px 30px;
+    border-radius: 14px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    border-top: 4px solid #2e8b57;
+}
+
+/* عناوين */
+h1, h2, h3 {
+    margin-bottom: 15px;
+    color: #1a5c38;
+}
+h1 { font-size: 26px; }
+h2 { font-size: 22px; }
+h3 { font-size: 18px; text-align: center; color: #2e8b57; }
+
+/* فواصل */
+hr {
+    border: none;
+    border-top: 1px solid #c8e6c9;
+    margin: 15px 0;
+}
+
+/* شريط الأعلى */
+.top-links {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+.top-links a {
+    color: #2e8b57;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+}
+.top-links a:hover {
+    text-decoration: underline;
+}
+
+/* حقول الإدخال */
+input[type="text"],
+input[type="password"],
+input[type="email"],
+input[type="number"],
+input[type="date"],
+input[type="tel"],
+textarea,
+select {
+    width: 100%;
+    padding: 9px 11px;
+    margin: 5px 0 12px 0;
+    border: 1px solid #a5d6a7;
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: "Segoe UI", Arial, sans-serif;
+    transition: border-color 0.2s, box-shadow 0.2s, background-color 0.2s;
+    background-color: #fbfbfc;
+    direction: rtl;
+}
+textarea {
+    min-height: 90px;
+    resize: vertical;
+}
+input:focus,
+textarea:focus,
+select:focus {
+    outline: none;
+    border-color: #2e8b57;
+    box-shadow: 0 0 0 2px rgba(46,139,87,0.2);
+    background-color: #ffffff;
+}
+
+/* أزرار عامة */
+button,
+input[type="submit"],
+input[type="button"] {
+    background: linear-gradient(135deg, #2e8b57, #1a6b3c);
+    border: none;
+    color: #ffffff;
+    padding: 9px 18px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    margin: 4px 3px;
+    font-weight: 500;
+    font-family: "Segoe UI", Arial, sans-serif;
+    transition: transform 0.1s, box-shadow 0.1s, background 0.2s;
+}
+button:hover,
+input[type="submit"]:hover,
+input[type="button"]:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.18);
+    background: linear-gradient(135deg, #1a6b3c, #145230);
+}
+button:active,
+input[type="submit"]:active,
+input[type="button"]:active {
+    transform: translateY(0);
+    box-shadow: none;
+}
+
+/* زر الخروج (أحمر) */
+.btn-logout {
+    background: linear-gradient(135deg, #c0392b, #922b21);
+    border: none;
+    color: #ffffff;
+    padding: 7px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    font-family: "Segoe UI", Arial, sans-serif;
+    text-decoration: none;
+    font-weight: 500;
+    display: inline-block;
+    transition: transform 0.1s, box-shadow 0.1s;
+}
+.btn-logout:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.18);
+    text-decoration: none;
+}
+
+/* روابط */
+a {
+    color: #2e8b57;
+    text-decoration: none;
+}
+a:hover {
+    text-decoration: underline;
+}
+
+/* رسائل النجاح والخطأ */
+.msg-success {
+    color: #1e7e34;
+    background: #e9f7ef;
+    border: 1px solid #28a745;
+    padding: 9px 12px;
+    border-radius: 6px;
+    margin: 8px 0;
+    font-size: 14px;
+}
+.msg-error {
+    color: #c0392b;
+    background: #fdecea;
+    border: 1px solid #e74c3c;
+    padding: 9px 12px;
+    border-radius: 6px;
+    margin: 8px 0;
+    font-size: 14px;
+}
+
+/* بطاقة الحجز - مبدئي */
+.resv-card {
+    border: 1px solid #a5d6a7;
+    border-radius: 10px;
+    padding: 12px 15px;
+    margin-bottom: 12px;
+    background: #f0fff4;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+/* بطاقة الحجز - نهائي (مظلل بلون آخر) */
+.resv-card-confirmed {
+    border: 1px solid #2e8b57;
+    border-radius: 10px;
+    padding: 12px 15px;
+    margin-bottom: 12px;
+    background: #c8e6c9;
+    box-shadow: 0 2px 6px rgba(46,139,87,0.15);
+}
+
+/* بطاقة الصالة */
+.mosque-card {
+    border: 1px solid #a5d6a7;
+    border-radius: 10px;
+    padding: 15px 18px;
+    margin-bottom: 15px;
+    background: #f9fff9;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.07);
+}
+.mosque-card img {
+    max-width: 150px;
+    max-height: 120px;
+    margin: 5px 5px 0 0;
+    border-radius: 8px;
+    border: 1px solid #a5d6a7;
+}
+
+/* صناديق الفلاتر */
+.filter-box {
+    text-align: center;
+    margin-bottom: 18px;
+}
+.filter-box form {
+    display: inline-block;
+    margin: 5px 8px;
+}
+
+/* تخصيص form-box */
+.form-box p {
+    margin: 5px 0 3px 0;
+    font-size: 14px;
+    font-weight: 500;
+    color: #1a5c38;
+}
+.form-box input[type="submit"] {
+    width: 100%;
+    margin-top: 8px;
+}
+.form-box a {
+    display: block;
+    text-align: center;
+    font-size: 13px;
+    margin-top: 10px;
+}
+
+/* جدول البيانات */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    font-size: 13px;
+}
+table th {
+    background: #2e8b57;
+    color: #fff;
+    padding: 10px 8px;
+    text-align: right;
+}
+table td {
+    padding: 9px 8px;
+    border-bottom: 1px solid #c8e6c9;
+    text-align: right;
+}
+table tr:hover td {
+    background: #e8f5e9;
+}
+
+/* شارة نوع الحجز */
+.badge-pending {
+    background: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffc107;
+    padding: 3px 8px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: bold;
+}
+.badge-confirmed {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #28a745;
+    padding: 3px 8px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+/* عنوان الموقع في أعلى صفحات الدشبورد */
+.site-header {
+    text-align: center;
+    padding: 10px 0 15px 0;
+    border-bottom: 2px solid #a5d6a7;
+    margin-bottom: 20px;
+}
+.site-header h1 {
+    font-size: 24px;
+    color: #1a5c38;
+}
+.site-header p {
+    font-size: 13px;
+    color: #555;
+    margin-top: 4px;
+}

@@ -1,0 +1,113 @@
+﻿=== Slide 1 ===
+Conditional Statements:  If   if (expression) {statement}EX:      <?php    $secretNumber = 453;                          if ($_POST['guess'] == $secretNumber) {                               echo "<p>Congratulations!</p>";			}      ?>------------------------------------------------------------------------------------------------------Can be typed as: if ($_POST['guess'] == $secretNumber)   echo "<p>Congratulations!</p>";
+Control Structures
+
+=== Slide 2 ===
+else                   <?php$secretNumber = 453;if ($_POST['guess'] == $secretNumber) {        echo "<p>Congratulations!!</p>";} else {           echo "<p>Sorry!</p>";          }   ?>------------------------------------------------------------------------------------------------------
+Control Structures
+
+=== Slide 3 ===
+elseif<?php$secretNumber = 453;$_POST['guess'] = 442;if ($_POST['guess'] == $secretNumber) {echo "<p>Congratulations!</p>";} elseif (abs ($_POST['guess'] - $secretNumber) < 10) {echo "<p>You're getting close!</p>";} else {echo "<p>Sorry!</p>";}?>------------------------------------------------------------------------------------------------------
+Control Structures
+
+=== Slide 4 ===
+switch                  <?php    switch($category) {            case "news":	print "<p>What's happening around the World</p>";	break;	case "weather":	print "<p>Your weekly forecast</p>";	break;	case "sports":	print "<p>Latest sports highlights</p>";	break;	default:	print "<p>Welcome to my Web site</p>";	                      } ?>------------------------------------------------------------------------------------------------------
+Control Structures
+
+=== Slide 5 ===
+Looping Statements:whilewhile (expression) {statements}       EX:<?php$count = 1;while ($count < 5) {echo "$count squared = ".pow($count,2). "<br />";$count++;}?>
+Control Structures
+
+=== Slide 6 ===
+do…while    do {            statements     } while (expression);EX:<?php$count = 11;do {echo "$count squared = ".pow($count,2). "<br />";} while ($count < 10);?>------------------------------------------------------------------------------------------------------
+Control Structures
+
+=== Slide 7 ===
+do…while    do {            statements     } while (expression);EX:<?php$count = 11;do {echo "$count squared = ".pow($count,2). "<br />";} while ($count < 10);?>------------------------------------------------------------------------------------------------------
+Control Structures
+
+=== Slide 8 ===
+do…while    do {            statements     } while (expression);EX:<?php$count = 11;do {echo "$count squared = ".pow($count,2). "<br />";} while ($count < 10);?>------------------------------------------------------------------------------------------------------
+Control Structures
+
+=== Slide 9 ===
+for    for (expression1; expression2; expression3) {          statements    }There are a few rules to keep in mind when using PHP’s for loops:• The first expression, expression1, is evaluated by default at the first   iteration of the loop.• The second expression, expression2, is evaluated at the beginning  of each iteration. This expression determines whether looping will  continue.• The third expression, expression3, is evaluated at the conclusion of   each loop.• Any of the expressions can be empty------------------------------------------------------------------------------------------------------
+Control Structures
+
+=== Slide 10 ===
+EX:// Example Onefor ($kilometers = 1; $kilometers <= 5; $kilometers++) {    echo "$kilometers kilometers = ".$kilometers*0.62140. " miles";}// Example Twofor ($kilometers = 1; ; $kilometers++) {    if ($kilometers > 5) break;     echo "$kilometers kilometers = ".$kilometers*0.62140. "miles ";}// Example Three$kilometers = 1;for (;;) {   if ($kilometers > 5) break;    echo "$kilometers kilometers = ".$kilometers*0.62140. " miles ";    $kilometers++; }
+Control Structures
+
+=== Slide 11 ===
+foreach         foreach (array_expr as $value) {         statement    }EX:<?php      $links = array("www.apress.com","www.php.net","www.apache.org");echo "<b>Online Resources</b>:<br />";foreach($links as $link) {          echo "<a href="http://$link\">$link</a><br />";}?>------------------------------------------------------------------------------------------------------
+Control Structures
+
+=== Slide 12 ===
+The second variation is well-suited for working with both the key and value of an array. The syntax follows:		       foreach (array_expr as $key => $value) {			statement		       }EX:   If the $links array contained both a link and corresponding link title:        <?php  $links = array("The Official Apache Web site" => "www.apache.org",                          "The Apress corporate Web site" => "www.apress.com",                          "The Official PHP Web site" => "www.php.net");              echo "<b>Online Resources</b>:<br />";              foreach($links as $title => $link) {                      echo "<a href=\"http://$link\">$title</a><br />";               }------------------------------------------------------------------------------------------------------
+Control Structures
+
+=== Slide 13 ===
+break<?php$primes = array(2,3,5,7,11,13,17,19,23,29,31,37,41,43,47);for($count = 1; $count++; $count < 1000) {	  $randomNumber = rand(1,50);	  if (in_array($randomNumber,$primes)) {         break;     } else {            echo "<br>Non-prime number encountered: $randomNumber ";    }}    ?>------------------------------------------------------------------------------------------------------
+Control Structures
+
+=== Slide 14 ===
+continue<?php           $usernames = array("grace","doris","gary","nate","missing","tom");    for ($x=0; $x < count($usernames); $x++) {             if ($usernames[$x] == "missing") continue;                 echo "Staff member: $usernames[$x] <br />";    }?>------------------------------------------------------------------------------------------------------
+Control Structures
+
+=== Slide 15 ===
+        Good programmers are always thinking in terms of ensuring reusability and modularity. The most prevalent means for ensuring such is by isolatingfunctional components into separate files, and then reassembling those filesas needed. PHP offers 4 statements for including such files into applications.1.  Include          include (/path/to/filename)          The include() statement will evaluate and include a file into the locationwhere it is called. Including a file produces the same result as copying thedata from the file specified into the location in which the statement appears. For example, if you wanted to include a series of predefined functions andconfiguration variables, you could place them into a separate file (called init.php, for example), and then include that file within the top of each PHPscript, like this:	<?php		include "/usr/local/lib/php/wjgilmore/init.php";                                         /* the script continues here */   ?>------------------------------------------------------------------------------------------------------
+File Inclusion Statements
+
+=== Slide 16 ===
+Note:      if you use the include() in a conditional ,you have to enclose the            statement block between curly brackets.EX:<?php         if (expression) {         include ('filename');         } else {                    include ('another_filename');                   }     ?>------------------------------------------------------------------------------------------------------
+File Inclusion Statements
+
+=== Slide 17 ===
+include_once()               include_once (filename)         The include_once() function has the same purpose as include(), exceptthat it first verifies whether or not the file has already been included. If it hasbeen, include_once() will not execute. Otherwise, it will include the file asnecessary.require()           require (filename)The require() function operates like include(), but There are two differences:  The first difference,  When a script is processed, PHP replaces instances of the require statement with the contents of the file to be included, even if the line containing the require statement is never executed. But , the include statement is processed only when the statement is executed and returns a true or false, depending on whether the statement is executed correctly.      The second difference is that script execution will stop if a require() fails, Whereas it may continue in the case of an include().
+File Inclusion Statements
+
+=== Slide 18 ===
+require_once     require_once (insertion_file)     The require_once() function ensures that the inclusion file is included only once in your script. After require_once() is encountered, any subsequentattempts to include the same file will be ignored.------------------------------------------------------------------------------------------------------
+File Inclusion Statements
+
+=== Slide 19 ===
+Invoking a Function           <?php$value = pow(5,3); // returns 125echo $value;   ?>Or   echo "Five raised to the third power equals ".pow(5,3).".";Creating Function:function function_name (parameters) {function-body}For example:			function generate_footer() {			    echo "<p>Copyright &copy; 2006 W. Jason Gilmore</p>";			}                       you can then call the function :         generate_footer();------------------------------------------------------------------------------------------------------
+Functions
+
+=== Slide 20 ===
+Passing argument by value      <?php  function salestax($price,$tax) {   $total = $price + ($price * $tax);    echo "Total cost: $total";}$pricetag = 15.00;$salestax = .075;salestax($pricetag, $salestax);//call statment?>------------------------------------------------------------------------------------------------------
+Functions
+
+=== Slide 21 ===
+Functions
+Passing argument by Reference              <?php			$cost = 20.00;			$tax = 0.05;			function calculate_cost(&$cost, $tax)			{			     // Modify the $cost variable			     $cost = $cost + ($cost * $tax);			    // Perform some random change to the $tax variable.			   $tax += 4;			}   			calculate_cost($cost,$tax);			echo "Tax is: ". $tax*100%"<br />";			echo "Cost is: $". $cost."<br />";		?>------------------------------------------------------------------------------------------------------
+
+=== Slide 22 ===
+Functions
+Default Argument Values Default values can be assigned to input arguments, which will be automatically assigned to the argument if no other value is provided.		<?php	function salestax($price,$tax=.05) {				$total = $price + ($price * $tax);				echo "Total cost: $total";			}			$price = 12.0;			salestax($price,0.02);  ?>Keep in mind that you can still pass $tax another taxation rate; 5.0 percent will be used only if salestax() is invoked like this: salestax($price);Note:   the default argument values must be constant expressions; you               cannot assign nonconstant values such as function calls or variables.------------------------------------------------------------------------------------------------------
+
+=== Slide 23 ===
+Functions
+Optional Arguments You can designate certain arguments as optional by placing them at the endof the list and assigning them a default value of nothing, like so:			<?php   function salestax($price,$tax="") {				      $total = $price + ($price * $tax);				      echo "Total cost: $total";				 }  ?>This allows you to call salestax() without the second parameter if there is nosales tax:   salestax(42.00);This returns the following:              Total cost: $42.00------------------------------------------------------------------------------------------------------
+
+=== Slide 24 ===
+  If multiple optional arguments are specified, you can selectively choose  which ones are passed along. Consider this example:              function calculate($price,$price2="",$price3="") {                  echo $price + $price2 + $price3;              }You can then call calculate(), passing along just $price and $price3, like so:				    calculate(10,"",3);This returns the following value:   13------------------------------------------------------------------------------------------------------
+Functions
+
+=== Slide 25 ===
+Functions
+Returning values from a function  return()The return() statement returns any resulting value back to the function caller			function salestax($price,$tax=.0575) {         	                  $total = $price + ($price * $tax);			     return $total;			}Alternatively, you could return the calculation directly without even assigningit to $total, like this:			function salestax($price,$tax=.0575) {			      return $price + ($price * $tax);			}call statement can be :      <?php   $price = 6.50;					    $total = salestax($price);   ?>------------------------------------------------------------------------------------------------------
+
+=== Slide 26 ===
+Functions
+Returning Multiple values  <?php         $colors = array("red","blue","green");		        list($red,$blue,$green) = $colors;		       // $red="red", $blue="blue",$green="green“     ?>Building on this example, you can imagine how the three prerequisite valuesmight be returned from a function using list():		<?php			function retrieve_user_profile() {			        $user[] = "Jason";			        $user[] = "jason@example.com";			        $user[] = "English";			        return $user;                      }                          list($name,$email,$language) = retrieve_user_profile();            echo "Name: $name, Email: $email, Language: $language";   ?>Output is :   Name: Jason, email: jason@example.com, preferred language: English------------------------------------------------------------------------------------------------------
+
+=== Slide 27 ===
+Functions
+Variable FunctionsA variable function is a function whose name is evaluated before execution,which is mean  the exact name of the function is not known until execution time. Variable  functions are prefaced with a dollar sign, just like regularvariables, like this:                     $function();	For example:         if we have a number of functions to retrieve several data :   retrieveUser(),  retrieveNews(), and retrieveWeather(),   where the name of each function implies its purpose. Solution by if statement:	<?php      if ($trigger == "retrieveUser") { 			retrieveUser($rowid);		        } else if ($trigger == "retrieveNews") {			        retrieveNews($rowid);			     } else if ($trigger == "retrieveWeather") {				      retrieveWeather($rowid);         }   ?>
+
+=== Slide 28 ===
+Functions
+Solution by Variable function:<?php    $trigger($rowid);  ?>------------------------------------------------------------------------------------------------------Function LibrariesPHP libraries are created via the simple collective  of function definitions in asingle file, like this:<?php function local_tax($grossIncome, $taxRate) {// function body here}function state_tax($grossIncome, $taxRate) {// function body here} ?>Denote Save this library, using a name which is indicating to its purpose . Liketaxes.library.php. You can then insert this function  into scripts usinginclude(), include_once(), require(), or require_once().<?php    require_once("taxation.library.php");     . ..  ?>
+
+
